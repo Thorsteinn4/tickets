@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Name draw | Amplify Bloomington</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400..900&display=swap" rel="stylesheet">
+<!-- TT Commons via Adobe Fonts: create a web project with TT Commons at fonts.adobe.com,
+     then replace YOUR_KIT_ID below and remove the comment markers. -->
+<!-- <link rel="stylesheet" href="https://use.typekit.net/YOUR_KIT_ID.css"> -->
+<style>
+/* Amplify Bloomington brand palette */
+:root{
+  --char:#2c3329; --char-2:#3e4a3a; --violet:#5c35d8; --violet-dark:#452bb2;
+  --lime:#cefc3d; --lime-pale:#eaf9ac; --paper:#f4f5f2;
+
+  --bg:var(--char); --surface:var(--char-2); --ink:var(--paper); --muted:#b7c0b1; --line:#56634f;
+  --accent:var(--lime); --accent-ink:var(--char);
+  --reel:var(--violet); --reel-ink:#ddd3ff; --reel-dim:#b9a6f7; --win:var(--lime);
+  --band:rgba(206,252,61,.10); --band-strong:rgba(206,252,61,.24); --band-line:rgba(206,252,61,.8);
+  /* Check the exact family name in your Adobe Fonts web project and adjust the first entry if needed */
+  --font:"tt-commons-pro","TT Commons","Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45}
+:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+
+.app{max-width:1180px;margin:0 auto;padding:32px 20px 48px;display:grid;
+  grid-template-columns:340px minmax(0,1fr);gap:24px;align-items:start}
+.app.stage-only{grid-template-columns:minmax(0,1fr);max-width:1000px}
+.app.stage-only .setup{display:none}
+@media (max-width:860px){ .app{grid-template-columns:minmax(0,1fr)} .setup{order:2} }
+
+/* Setup panel */
+.panel{background:var(--surface);border-radius:14px;padding:20px}
+.block + .block{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+.setup h2{font-size:17px;font-weight:700;margin:0 0 12px}
+.drop{position:relative;display:block;border:1.5px dashed var(--line);border-radius:10px;
+  padding:20px 16px;text-align:center;cursor:pointer;color:var(--muted);font-size:14px}
+.drop strong{display:block;color:var(--ink);font-weight:650;font-size:16px;margin-bottom:2px}
+.drop.over,.drop:focus-within{border-color:var(--lime)}
+.drop input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.alt{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:14px}
+.linkish{font:inherit;background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;
+  text-underline-offset:3px;text-decoration-color:var(--line);cursor:pointer}
+.linkish:hover{text-decoration-color:var(--lime)}
+.paste{margin-top:12px}
+.paste[hidden]{display:none}
+textarea,select{font:inherit;font-size:15px;color:var(--ink);background:var(--char);border:1px solid var(--line);
+  border-radius:8px;width:100%}
+textarea{min-height:120px;padding:10px;resize:vertical}
+select{padding:8px 10px}
+.field{margin-top:14px}
+.field > label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:10px;font-size:15px;cursor:pointer}
+.check input{accent-color:var(--lime);width:17px;height:17px;margin:2px 0 0;flex:none}
+.note{font-size:14px;color:var(--muted);margin:10px 0 0}
+.error{font-size:14px;color:var(--lime-pale);margin:10px 0 0}
+.btn{font:inherit;font-size:14px;background:transparent;border:1px solid var(--line);color:var(--ink);
+  border-radius:8px;padding:7px 12px;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.winners{margin:0;padding-left:24px;max-height:260px;overflow:auto}
+.winners li{padding:3px 0}
+.winners li::marker{color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* Brand mark: keep at least one tilde of clear space around it */
+.brand{display:inline-block;margin-bottom:28px;text-decoration:none}
+.logo{display:block;height:26px;width:auto}
+.wordmark{font-weight:900;font-size:19px;color:var(--lime);letter-spacing:-.01em}
+
+/* Stage */
+.stage{display:flex;flex-direction:column;gap:20px;min-width:0}
+.stage-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+h1{font-size:clamp(34px,4.6vw,50px);font-weight:900;letter-spacing:-.02em;line-height:1;margin:0}
+.sub{margin:10px 0 0;color:var(--muted);max-width:52ch}
+
+.reel{--row:clamp(58px,9vw,84px);position:relative;height:calc(var(--row) * 5);
+  background:var(--reel);border-radius:18px;overflow:hidden}
+.app.stage-only .reel{--row:clamp(64px,11vw,116px)}
+.viewport{position:absolute;inset:0;overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 32%,#000 68%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0,#000 32%,#000 68%,transparent 100%)}
+.strip{will-change:transform}
+.item{height:var(--row);display:flex;align-items:center;justify-content:center;padding:0 52px;
+  color:var(--reel-ink);font-size:calc(var(--row) * .44);font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+.item span{display:block;overflow:hidden;text-overflow:ellipsis;max-width:100%;
+  transition:transform .4s cubic-bezier(.2,.9,.3,1.3),color .3s}
+.item.landed span{color:var(--win);transform:scale(1.07)}
+.reel.placeholder .item{color:var(--reel-dim);font-size:calc(var(--row) * .3);font-weight:500}
+.band{position:absolute;left:0;right:0;top:calc(var(--row) * 2);height:var(--row);
+  border-top:2px dashed var(--band-line);border-bottom:2px dashed var(--band-line);
+  background:var(--band);pointer-events:none;transition:background .4s}
+.reel.done .band{background:var(--band-strong)}
+.pointer{position:absolute;top:calc(var(--row) * 2.5);transform:translateY(-50%);width:0;height:0;
+  border-top:13px solid transparent;border-bottom:13px solid transparent;pointer-events:none}
+.pointer.l{left:0;border-left:17px solid var(--lime)}
+.pointer.r{right:0;border-right:17px solid var(--lime)}
+
+.controls{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.draw{font:inherit;font-size:20px;font-weight:800;background:var(--accent);color:var(--accent-ink);
+  border:0;border-radius:999px;padding:16px 34px;cursor:pointer}
+.draw:disabled{opacity:.45;cursor:not-allowed}
+.draw:not(:disabled):active{transform:translateY(1px)}
+.pool{color:var(--muted);font-size:15px;font-variant-numeric:tabular-nums}
+.result{margin:0;min-height:3.6em}
+.result-label{display:block;color:var(--muted);font-size:14px}
+.result-name{display:block;font-size:clamp(28px,4.2vw,44px);font-weight:900;letter-spacing:-.015em;
+  line-height:1.1;overflow-wrap:anywhere;color:var(--lime)}
+.result-wait{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <aside class="setup panel" aria-label="Setup">
+    <div class="block">
+      <h2>Your list</h2>
+      <label class="drop" id="drop">
+        <strong>Drop a CSV here</strong>
+        or click to choose a file
+        <input type="file" id="file" accept=".csv,.txt,text/csv,text/plain">
+      </label>
+      <div class="alt">
+        <button class="linkish" type="button" id="pasteToggle">Paste names instead</button>
+        <button class="linkish" type="button" id="sample">Try sample names</button>
+      </div>
+      <div class="paste" id="pasteBox" hidden>
+        <textarea id="pasteText" placeholder="One name per line"></textarea>
+        <div class="row"><button class="btn" type="button" id="usePaste">Use these names</button></div>
+      </div>
+      <p class="error" id="error" hidden></p>
+
+      <div id="loaded" hidden>
+        <p class="note" id="fileName"></p>
+        <label class="check"><input type="checkbox" id="headerChk"> First row is a header</label>
+        <div class="field">
+          <label for="column">Name column</label>
+          <select id="column"></select>
+        </div>
+        <p class="note" id="summary"></p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2>Options</h2>
+      <label class="check"><input type="checkbox" id="removeChk" checked> Remove each winner from the pool</label>
+      <label class="check"><input type="checkbox" id="soundChk" checked> Play sound during the draw</label>
+    </div>
+
+    <div class="block">
+      <h2>Drawn so far</h2>
+      <p class="note" id="noWinners">No names drawn yet.</p>
+      <ol class="winners" id="winners"></ol>
+      <div class="row">
+        <button class="btn" type="button" id="copyBtn" disabled>Copy names</button>
+        <button class="btn" type="button" id="resetBtn" disabled>Reset draws</button>
+        <span class="note" id="copyStatus" style="margin:0" aria-live="polite"></span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <div class="stage-head">
+      <div>
+        <a class="brand" href="https://amplifybloomington.org" aria-label="Amplify Bloomington">
+          <img class="logo" src="logo.svg" alt="Amplify Bloomington"
+               onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+          <span class="wordmark" hidden>Amplify Bloomington</span>
+        </a>
+        <h1>Name draw</h1>
+        <p class="sub">Load a list, then draw. Every entry has an equal chance.</p>
+      </div>
+      <button class="btn" type="button" id="toggleSetup" aria-pressed="false">Hide setup</button>
+    </div>
+
+    <div class="reel placeholder" id="reel" aria-hidden="true">
+      <div class="viewport"><div class="strip" id="strip"></div></div>
+      <div class="band"></div>
+      <div class="pointer l"></div>
+      <div class="pointer r"></div>
+    </div>
+
+    <div class="controls">
+      <button class="draw" type="button" id="drawBtn" disabled>Draw a name</button>
+      <span class="pool" id="poolInfo"></span>
+    </div>
+
+    <p class="result" id="result" aria-live="polite"></p>
+  </main>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const els = {
+    app:$('app'), file:$('file'), drop:$('drop'), pasteToggle:$('pasteToggle'), pasteBox:$('pasteBox'),
+    pasteText:$('pasteText'), usePaste:$('usePaste'), sample:$('sample'), error:$('error'),
+    loaded:$('loaded'), fileName:$('fileName'), headerChk:$('headerChk'), column:$('column'), summary:$('summary'),
+    removeChk:$('removeChk'), soundChk:$('soundChk'), winners:$('winners'), noWinners:$('noWinners'),
+    copyBtn:$('copyBtn'), resetBtn:$('resetBtn'), copyStatus:$('copyStatus'), toggleSetup:$('toggleSetup'),
+    reel:$('reel'), strip:$('strip'), drawBtn:$('drawBtn'), poolInfo:$('poolInfo'), result:$('result')
+  };
+
+  const KEY = 'ab-name-draw-v1';
+  const state = {
+    rows:[], header:false, column:'0', fileName:'',
+    entries:[], pool:[], winners:[],
+    removeWinners:true, sound:true, visible:null, landed:false, stageOnly:false
+  };
+  let spinning = false, rowH = 72, pos = 2;
+
+  /* ---------- Randomness ---------- */
+  // Unbiased integer in [0, n) from the browser's cryptographic generator.
+  function randInt(n){
+    const limit = Math.floor(0x100000000 / n) * n;
+    const buf = new Uint32Array(1);
+    let x;
+    do { crypto.getRandomValues(buf); x = buf[0]; } while (x >= limit);
+    return x % n;
+  }
+
+  /* ---------- CSV ---------- */
+  function detectDelim(text){
+    const line = text.split(/\r?\n/).find(l => l.trim()) || '';
+    const counts = {',':0, ';':0, '\t':0};
+    let inQ = false;
+    for (const ch of line){ if (ch === '"') inQ = !inQ; else if (!inQ && ch in counts) counts[ch]++; }
+    const best = Object.entries(counts).sort((a,b) => b[1]-a[1])[0];
+    return best[1] ? best[0] : ',';
+  }
+  function parseCSV(text){
+    text = text.replace(/^\uFEFF/, '');
+    const d = detectDelim(text);
+    const rows = []; let row = [], f = '', q = false;
+    for (let i = 0; i < text.length; i++){
+      const c = text[i];
+      if (q){
+        if (c === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; }
+        else f += c;
+      } else if (c === '"' && f === '') q = true;
+      else if (c === d){ row.push(f); f = ''; }
+      else if (c === '\n' || c === '\r'){
+        if (c === '\r' && text[i+1] === '\n') i++;
+        row.push(f); rows.push(row); row = []; f = '';
+      } else f += c;
+    }
+    if (f !== '' || row.length){ row.push(f); rows.push(row); }
+    return rows.map(r => r.map(s => s.trim())).filter(r => r.some(Boolean));
+  }
+  function looksLikeHeader(row){
+    return row.some(c => /^(full[\s_-]?|first[\s_-]?|last[\s_-]?|given[\s_-]?|sur)?name$|^first$|^last$|e-?mail|attendee|guest|participant|company|phone|ticket/i.test(c));
+  }
+
+  /* ---------- Columns and entries ---------- */
+  function columnCount(){ return state.rows.reduce((m, r) => Math.max(m, r.length), 0); }
+  function columnOptions(){
+    const n = columnCount(), first = state.rows[0] || [], sample = state.header ? state.rows[1] || [] : first;
+    const labels = Array.from({length:n}, (_, i) => {
+      if (state.header && first[i]) return first[i];
+      const eg = sample[i] ? ` (e.g. ${sample[i].slice(0,24)})` : '';
+      return `Column ${i+1}${eg}`;
+    });
+    const opts = labels.map((label, i) => ({value:String(i), label}));
+    if (state.header){
+      const fi = labels.findIndex(l => /^(first|given)([\s_-]?name)?$/i.test(l));
+      const li = labels.findIndex(l => /^(last|sur|family)([\s_-]?name)?$/i.test(l));
+      if (fi > -1 && li > -1) opts.unshift({value:`${fi}+${li}`, label:`${labels[fi]} + ${labels[li]}`});
+    }
+    return opts;
+  }
+  function guessColumn(opts){
+    if (opts[0] && opts[0].value.includes('+')) return opts[0].value;
+    const hit = opts.find(o => /name|attendee|guest|participant/i.test(o.label) && !/user|company|org|file|business/i.test(o.label));
+    return (hit || opts[0] || {value:'0'}).value;
+  }
+  function buildEntries(){
+    const data = state.header ? state.rows.slice(1) : state.rows;
+    const [a, b] = state.column.split('+').map(Number);
+    state.entries = data
+      .map(r => (isNaN(b) ? (r[a] || '') : `${r[a] || ''} ${r[b] || ''}`).replace(/\s+/g,' ').trim())
+      .filter(Boolean)
+      .map((name, id) => ({id, name}));
+    state.pool = state.entries.map(e => e.id);
+    state.winners = [];
+    state.visible = null;
+    state.landed = false;
+  }
+
+  function loadRows(rows, fileName, header){
+    els.error.hidden = true;
+    if (!rows.length){
+      showError('That file has no rows to read. Check that it’s a CSV with one entry per row.');
+      return;
+    }
+    state.rows = rows;
+    state.fileName = fileName;
+    state.header = header !== undefined ? header : (rows.length > 1 && looksLikeHeader(rows[0]));
+    state.column = guessColumn(columnOptions());
+    buildEntries();
+    if (!state.entries.length) showError('No names found in that column. Try choosing a different one.');
+    save(); renderAll();
+  }
+  function showError(msg){ els.error.textContent = msg; els.error.hidden = false; }
+
+  /* ---------- Reel ---------- */
+  function measure(){
+    const it = els.strip.firstElementChild;
+    rowH = it ? it.getBoundingClientRect().height : 72;
+  }
+  function setPos(p){
+    pos = p;
+    els.strip.style.transform = `translate3d(0, ${(-(p - 2) * rowH).toFixed(2)}px, 0)`;
+  }
+  function renderStrip(items){
+    const frag = document.createDocumentFragment();
+    for (const name of items){
+      const d = document.createElement('div'); d.className = 'item';
+      const s = document.createElement('span'); s.textContent = name;
+      d.appendChild(s); frag.appendChild(d);
+    }
+    els.strip.textContent = '';
+    els.strip.appendChild(frag);
+    measure();
+  }
+  function fillerName(){
+    const src = state.pool.length ? state.pool : state.entries.map(e => e.id);
+    return state.entries[src[randInt(src.length)]].name;
+  }
+  function idleReel(){
+    els.reel.classList.remove('done');
+    if (!state.entries.length){
+      els.reel.classList.add('placeholder');
+      renderStrip(['', '', 'Load a list to begin', '', '']);
+      setPos(2); return;
+    }
+    els.reel.classList.remove('placeholder');
+    if (!state.visible) state.visible = Array.from({length:5}, fillerName);
+    renderStrip(state.visible);
+    setPos(2);
+    if (state.landed){
+      els.strip.children[2].classList.add('landed');
+      els.reel.classList.add('done');
+    }
+  }
+
+  // Cubic-bezier easing: gentle start, fast middle, long slow finish.
+  function bezier(x1, y1, x2, y2){
+    const cx = 3*x1, bx = 3*(x2-x1) - cx, ax = 1 - cx - bx;
+    const cy = 3*y1, by = 3*(y2-y1) - cy, ay = 1 - cy - by;
+    const sx = t => ((ax*t + bx)*t + cx)*t, sy = t => ((ay*t + by)*t + cy)*t;
+    return x => { let lo = 0, hi = 1, t = x; for (let i = 0; i < 24; i++){ t = (lo+hi)/2; if (sx(t) < x) lo = t; else hi = t; } return sy(t); };
+  }
+  const easeSpin = bezier(.32, 0, .1, 1);
+
+  function spin(from, to, dur, reduced){
+    return new Promise(resolve => {
+      const over = reduced ? 0 : 0.2;          // tiny overshoot, then settle back
+      const mainDur = reduced ? dur : dur * 0.92, settle = dur - mainDur;
+      let start = null, lastIdx = Math.round(from), lastP = from;
+      function frame(ts){
+        if (start === null) start = ts;
+        const t = ts - start;
+        let p;
+        if (t < mainDur) p = from + (to + over - from) * easeSpin(t / mainDur);
+        else if (t < dur){ const k = (t - mainDur) / settle; const e = k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2)/2; p = to + over - over * e; }
+        else p = to;
+        setPos(p);
+        const v = Math.abs(p - lastP); lastP = p;
+        els.strip.style.filter = (!reduced && v > 0.2) ? `blur(${Math.min(v * 1.6, 2.6).toFixed(2)}px)` : 'none';
+        const idx = Math.round(p);
+        if (idx !== lastIdx){ lastIdx = idx; if (!reduced) tick(); }
+        if (t < dur) requestAnimationFrame(frame);
+        else { els.strip.style.filter = 'none'; resolve(); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ---------- Sound ---------- */
+  let actx = null;
+  function ensureAudio(){
+    if (!state.sound) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+    } catch (e) { actx = null; }
+  }
+  function blip(freq, len, vol, type, at){
+    if (!state.sound || !actx) return;
+    const t = actx.currentTime + (at || 0);
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(g).connect(actx.destination);
+    o.start(t); o.stop(t + len + 0.01);
+  }
+  const tick = () => blip(1700, 0.025, 0.04, 'square');
+  const chime = () => { blip(660, 0.35, 0.12, 'sine'); blip(990, 0.5, 0.12, 'sine', 0.12); };
+
+  /* ---------- Draw ---------- */
+  async function draw(){
+    if (spinning || !state.pool.length) return;
+    spinning = true;
+    ensureAudio();
+    els.copyStatus.textContent = '';
+    renderControls();
+
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const pick = randInt(state.pool.length);          // the winner is chosen here, fairly
+    const winnerId = state.pool[pick];
+    const winner = state.entries[winnerId].name;
+    const fromCount = state.pool.length;
+
+    const L = reduced ? 12 : 60 + randInt(12);
+    const target = L - 3;
+    const items = (state.visible || Array.from({length:5}, fillerName)).slice();
+    while (items.length < L) items.push(fillerName());
+    items[target] = winner;
+
+    els.reel.classList.remove('done', 'placeholder');
+    els.result.innerHTML = '<span class="result-wait">Drawing…</span>';
+    renderStrip(items);
+    setPos(2);
+
+    await spin(2, target, reduced ? 600 : 5000 + randInt(1400), reduced);
+
+    els.strip.children[target].classList.add('landed');
+    els.reel.classList.add('done');
+    chime();
+
+    state.visible = items.slice(target - 2, target + 3);
+    state.landed = true;
+    state.winners.push({name:winner, from:fromCount});
+    if (state.removeWinners) state.pool.splice(pick, 1);
+
+    spinning = false;
+    save();
+    renderResult(); renderWinners(); renderControls();
+    els.drawBtn.focus();
+  }
+
+  /* ---------- Rendering ---------- */
+  function renderSetup(){
+    const has = state.rows.length > 0;
+    els.loaded.hidden = !has;
+    if (!has) return;
+    els.fileName.textContent = state.fileName;
+    els.headerChk.checked = state.header;
+    const opts = columnOptions();
+    els.column.textContent = '';
+    for (const o of opts){
+      const op = document.createElement('option');
+      op.value = o.value; op.textContent = o.label;
+      els.column.appendChild(op);
+    }
+    els.column.value = state.column;
+    const counts = new Map();
+    for (const e of state.entries) counts.set(e.name, (counts.get(e.name) || 0) + 1);
+    const dupes = [...counts.values()].filter(v => v > 1).length;
+    let s = `${state.entries.length} ${state.entries.length === 1 ? 'entry' : 'entries'} loaded.`;
+    if (dupes) s += ` ${dupes} ${dupes === 1 ? 'name appears' : 'names appear'} more than once, and each row counts as its own entry.`;
+    els.summary.textContent = s;
+  }
+  function renderWinners(){
+    els.winners.textContent = '';
+    for (const w of state.winners){
+      const li = document.createElement('li'); li.textContent = w.name;
+      els.winners.appendChild(li);
+    }
+    els.noWinners.hidden = state.winners.length > 0;
+    els.copyBtn.disabled = !state.winners.length;
+    els.resetBtn.disabled = !state.winners.length;
+    els.winners.scrollTop = els.winners.scrollHeight;
+  }
+  function renderControls(){
+    const total = state.entries.length, left = state.pool.length;
+    els.drawBtn.disabled = spinning || !left;
+    els.drawBtn.textContent = spinning ? 'Drawing…' : (total && !left ? 'Everyone’s been drawn' : 'Draw a name');
+    if (!total) els.poolInfo.textContent = '';
+    else if (state.removeWinners) els.poolInfo.textContent = `${left} of ${total} entries in the pool`;
+    else els.poolInfo.textContent = `${total} entries. Winners stay in the pool.`;
+    els.headerChk.disabled = els.column.disabled = spinning;
+  }
+  function renderResult(){
+    const w = state.winners[state.winners.length - 1];
+    if (state.landed && w){
+      els.result.innerHTML = '';
+      const label = document.createElement('span'); label.className = 'result-label';
+      label.textContent = `Draw ${state.winners.length}, picked from ${w.from} ${w.from === 1 ? 'entry' : 'entries'}`;
+      const name = document.createElement('span'); name.className = 'result-name'; name.textContent = w.name;
+      els.result.append(label, name);
+    } else if (state.entries.length){
+      els.result.innerHTML = '<span class="result-wait">Ready when you are.</span>';
+    } else {
+      els.result.innerHTML = '';
+    }
+  }
+  function renderAll(){
+    els.removeChk.checked = state.removeWinners;
+    els.soundChk.checked = state.sound;
+    els.app.classList.toggle('stage-only', state.stageOnly);
+    els.toggleSetup.textContent = state.stageOnly ? 'Show setup' : 'Hide setup';
+    els.toggleSetup.setAttribute('aria-pressed', String(state.stageOnly));
+    renderSetup(); renderWinners(); renderControls(); renderResult(); idleReel();
+  }
+
+  /* ---------- Persistence (this browser only) ---------- */
+  function save(){
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        rows:state.rows, header:state.header, column:state.column, fileName:state.fileName,
+        pool:state.pool, winners:state.winners, removeWinners:state.removeWinners, sound:state.sound,
+        visible:state.visible, landed:state.landed, stageOnly:state.stageOnly
+      }));
+    } catch (e) {}
+  }
+  function restore(){
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (!s || !Array.isArray(s.rows)) return;
+      Object.assign(state, {
+        rows:s.rows, header:!!s.header, column:s.column || '0', fileName:s.fileName || '',
+        removeWinners:s.removeWinners !== false, sound:s.sound !== false, stageOnly:!!s.stageOnly
+      });
+      buildEntries();
+      if (Array.isArray(s.pool)) state.pool = s.pool.filter(id => state.entries[id]);
+      if (Array.isArray(s.winners)) state.winners = s.winners;
+      if (Array.isArray(s.visible) && s.visible.length === 5) state.visible = s.visible;
+      state.landed = !!s.landed && state.winners.length > 0;
+    } catch (e) {}
+  }
+
+  /* ---------- Events ---------- */
+  async function readFile(file){
+    if (!file) return;
+    try { loadRows(parseCSV(await file.text()), file.name); }
+    catch (e) { showError('That file couldn’t be read. Save it as a CSV and try again.'); }
+  }
+  els.file.addEventListener('change', e => { readFile(e.target.files[0]); e.target.value = ''; });
+  ['dragenter','dragover'].forEach(t => els.drop.addEventListener(t, e => { e.preventDefault(); els.drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(t => els.drop.addEventListener(t, e => { e.preventDefault(); els.drop.classList.remove('over'); }));
+  els.drop.addEventListener('drop', e => readFile(e.dataTransfer.files[0]));
+
+  els.pasteToggle.addEventListener('click', () => {
+    els.pasteBox.hidden = !els.pasteBox.hidden;
+    if (!els.pasteBox.hidden) els.pasteText.focus();
+  });
+  els.usePaste.addEventListener('click', () => {
+    const rows = els.pasteText.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean).map(s => [s]);
+    loadRows(rows, 'Pasted names', false);
+  });
+  els.sample.addEventListener('click', () => {
+    const names = ['Maya Okafor','Daniel Reyes','Priya Natarajan','Sam Whitfield','Lena Fischer','Marcus Bell',
+      'Hana Kobayashi','Owen Gallagher','Rosa Delgado','Theo Lindqvist','Amara Nwosu','Caleb Brooks',
+      'Ingrid Solberg','Jonah Mercer','Yasmin Haddad','Eli Navarro','Grace Tran','Felix Novak',
+      'Nadia Petrova','Ruben Castillo','Clara Jensen','Isaac Morrow','Leila Farouk','Wes Harlan'];
+    loadRows([['Name'], ...names.map(n => [n])], 'Sample names', true);
+  });
+
+  els.headerChk.addEventListener('change', () => {
+    state.header = els.headerChk.checked;
+    state.column = guessColumn(columnOptions());
+    buildEntries(); save(); renderAll();
+  });
+  els.column.addEventListener('change', () => {
+    state.column = els.column.value;
+    buildEntries(); save(); renderAll();
+  });
+  els.removeChk.addEventListener('change', () => { state.removeWinners = els.removeChk.checked; save(); renderControls(); });
+  els.soundChk.addEventListener('change', () => { state.sound = els.soundChk.checked; save(); });
+
+  els.resetBtn.addEventListener('click', () => {
+    state.pool = state.entries.map(e => e.id);
+    state.winners = []; state.landed = false;
+    save(); renderWinners(); renderControls(); renderResult(); idleReel();
+  });
+  els.copyBtn.addEventListener('click', async () => {
+    const text = state.winners.map(w => w.name).join('\n');
+    try { await navigator.clipboard.writeText(text); els.copyStatus.textContent = 'Copied'; }
+    catch (e) {
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); els.copyStatus.textContent = 'Copied'; }
+      catch (err) { els.copyStatus.textContent = 'Copy didn’t work. Select the list and copy it by hand.'; }
+      ta.remove();
+    }
+  });
+  els.toggleSetup.addEventListener('click', () => {
+    state.stageOnly = !state.stageOnly; save();
+    els.app.classList.toggle('stage-only', state.stageOnly);
+    els.toggleSetup.textContent = state.stageOnly ? 'Show setup' : 'Hide setup';
+    els.toggleSetup.setAttribute('aria-pressed', String(state.stageOnly));
+    requestAnimationFrame(() => { measure(); setPos(pos); });
+  });
+  els.drawBtn.addEventListener('click', draw);
+  window.addEventListener('resize', () => { measure(); setPos(pos); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); setPos(pos); });
+
+  restore();
+  renderAll();
+})();
+</script>
+</body>
+</html>
